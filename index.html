@@ -93,7 +93,7 @@
   .upload-box:focus-visible, .btn:focus-visible, .crop-stage:focus-visible{ outline:3px solid rgba(47,143,209,.28); outline-offset:2px; }
   .upload-box.invalid{ border-color:var(--danger); }
 
-  .status-banner{
+  .status-banner.success{border-color:#b7e4c7;background:#ecfdf3;color:#166534;}\n  .status-banner{
     display:none; font-size:.82rem; line-height:1.7; padding:10px 12px;
     border-radius:10px; margin-top:8px; text-align:right;
   }
@@ -803,27 +803,50 @@
   }
 
   function runGenerate(){
-    updateText(); updateQR();
-    printBtn.disabled=false; pngBtn.disabled=false; jpgBtn.disabled=false;
-    hideBanner();
+    updateText();
+    updateQR();
+    printBtn.disabled=false;
+    pngBtn.disabled=false;
+    jpgBtn.disabled=false;
     pendingNoPhotoConfirm = false;
+
+    // إظهار نتيجة واضحة حتى لا يبدو الزر وكأنه لم يعمل.
+    showBanner(
+      'success',
+      photoConfirmed
+        ? '✅ تم توليد الباج النهائي بنجاح. يمكنك الآن طباعته أو حفظه كصورة.'
+        : '✅ تم توليد الباج النهائي بنجاح بدون صورة. يمكنك الآن طباعته أو حفظه كصورة.'
+    );
+
+    // نقل المستخدم بصريًا إلى المعاينة على الشاشات الصغيرة.
+    if(window.matchMedia('(max-width: 900px)').matches){
+      const preview = document.querySelector('.preview-col');
+      if(preview) preview.scrollIntoView({behavior:'smooth', block:'start'});
+    }
   }
 
   generateBtn.addEventListener('click',()=>{
     const nameOk = validateName();
     const idOk = validateId();
     const yearOk = validateYear();
-    if(!nameOk){ nameInput.focus(); pendingNoPhotoConfirm=false; return; }
-    if(!idOk){ idInput.focus(); pendingNoPhotoConfirm=false; return; }
-    if(!yearOk){ yearInput.focus(); pendingNoPhotoConfirm=false; return; }
 
-    if(!photoConfirmed && !pendingNoPhotoConfirm){
-      pendingNoPhotoConfirm = true;
-      showBanner('warn','⚠️ لم تقم بتثبيت صورة شخصية. اضغط "توليد الباج النهائي" مرة أخرى للمتابعة بدون صورة، أو ارفع صورة أولاً من الأعلى.',[
-        { label:'المتابعة بدون صورة', onClick: runGenerate }
-      ]);
+    if(!nameOk){
+      showBanner('error','⚠️ يرجى تصحيح الاسم قبل توليد الباج.');
+      nameInput.focus();
       return;
     }
+    if(!idOk){
+      showBanner('error','⚠️ يرجى تصحيح رقم الطالب قبل توليد الباج.');
+      idInput.focus();
+      return;
+    }
+    if(!yearOk){
+      showBanner('error','⚠️ يرجى تصحيح العام الدراسي قبل توليد الباج.');
+      yearInput.focus();
+      return;
+    }
+
+    // الصورة اختيارية؛ لا نوقف التوليد بسبب عدم وجودها.
     runGenerate();
   });
 
