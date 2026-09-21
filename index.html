@@ -89,7 +89,24 @@
     line-height:1.5;
   }
   .field input.invalid, .field select.invalid{ border-color:var(--danger); background:var(--danger-bg); }
+  .field input:focus, .field select:focus{ outline:3px solid rgba(47,143,209,.18); border-color:var(--blue-light); }
+  .upload-box:focus-visible, .btn:focus-visible, .crop-stage:focus-visible{ outline:3px solid rgba(47,143,209,.28); outline-offset:2px; }
   .upload-box.invalid{ border-color:var(--danger); }
+
+  .status-banner{
+    display:none; font-size:.82rem; line-height:1.7; padding:10px 12px;
+    border-radius:10px; margin-top:8px; text-align:right;
+  }
+  .status-banner.show{ display:block; }
+  .status-banner.warn{ background:#fff3cd; border:1px solid #f1d78c; color:#6b5200; }
+  .status-banner.error{ background:var(--danger-bg); border:1px solid var(--danger); color:var(--danger); }
+  .status-banner .banner-actions{ margin-top:6px; display:flex; gap:8px; flex-wrap:wrap; }
+  .status-banner button{
+    border:none; border-radius:8px; padding:6px 12px; font-size:.78rem; font-weight:700;
+    cursor:pointer; font-family:inherit;
+  }
+  .status-banner.warn button{ background:#6b5200; color:#fff; }
+  .status-banner.error button{ background:var(--danger); color:#fff; }
 
   .crop-area{
     margin-top:12px; display:none;
@@ -122,15 +139,90 @@
   .btn-block{ width:100%; }
   .btn-row{ display:flex; gap:8px; flex-wrap:wrap; }
 
+
+  /* ===== Optional ready-card service ===== */
+  .ready-service{
+    margin:18px 0 4px;
+    padding:14px;
+    border:1px solid #d8e6ef;
+    border-radius:14px;
+    background:linear-gradient(135deg,#f5faff,#ffffff);
+    box-shadow:0 4px 14px rgba(10,42,67,.06);
+  }
+  .ready-service-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .ready-service-title{
+    color:var(--navy);
+    font-size:.92rem;
+    font-weight:800;
+    line-height:1.5;
+  }
+  .ready-service-desc{
+    color:var(--muted);
+    font-size:.77rem;
+    line-height:1.75;
+    margin-top:4px;
+  }
+  .ready-price{
+    flex:none;
+    color:#fff;
+    background:linear-gradient(135deg,var(--navy),var(--blue));
+    border-radius:10px;
+    padding:7px 10px;
+    font-size:.86rem;
+    font-weight:800;
+    white-space:nowrap;
+  }
+  .ready-price span{font-size:.7rem;font-weight:700;}
+  .ready-service-note{
+    margin-top:10px;
+    padding-top:9px;
+    border-top:1px dashed #d8e6ef;
+    color:#425766;
+    font-size:.76rem;
+    line-height:1.7;
+  }
+  .ready-service-note strong{
+    color:var(--blue);
+    direction:ltr;
+    unicode-bidi:embed;
+  }
+  .telegram-btn{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    margin-top:9px;
+    padding:9px 12px;
+    border-radius:9px;
+    background:#229ED9;
+    color:#fff;
+    text-decoration:none;
+    font-size:.82rem;
+    font-weight:800;
+  }
+  .telegram-btn:hover{filter:brightness(.96);}
+  @media (max-width:520px){
+    .ready-service-top{flex-direction:column;}
+    .ready-price{align-self:flex-start;}
+  }
+
   /* ===== Preview column ===== */
   .preview-col{
     display:flex; flex-direction:column; align-items:center; gap:14px;
     position:sticky; top:16px;
   }
   @media (max-width:820px){ .preview-col{ position:static; } }
+  .preview-label{ font-size:.78rem; color:var(--muted); font-weight:700; }
+  .preview-stage{ display:flex; flex-direction:column; align-items:center; gap:8px; width:100%; }
+  @media (max-width:520px){ .badge{ transform:scale(.92); transform-origin:top center; margin-bottom:-7mm; } }
 
   .badge{
-    width:54mm; height:85.6mm; background:var(--paper);
+    width:54mm; height:85.6mm; box-sizing:border-box; background:var(--paper);
     border-radius:3.4mm; position:relative; overflow:hidden;
     box-shadow:0 3px 14px rgba(10,42,67,.22), 0 0 0 1px rgba(10,42,67,.05);
     color:var(--ink); display:flex; flex-direction:column;
@@ -184,6 +276,7 @@
   .name{ font-size:3.5mm; font-weight:700; color:var(--navy); line-height:1.3; min-height:7.5mm; word-break:break-word; }
   .role-tag{
     font-size:2mm; font-weight:700; color:var(--blue); background:var(--ice);
+    white-space:nowrap;
     border:.28mm solid var(--blue-light); border-radius:4mm; padding:.6mm 3.2mm;
     margin-top:.3mm; display:inline-block;
   }
@@ -207,6 +300,10 @@
       #0b1f2e 1.3mm,#0b1f2e 1.75mm,transparent 1.75mm,transparent 2.1mm);
   }
   .footer .valid{ font-size:1.6mm; color:var(--muted); margin-top:1mm; }
+  /* الواجهة والخلفية لهما نفس المقاس الفيزيائي تمامًا؛ نخفي البيانات غير الضرورية من الواجهة فقط */
+  .badge:not(.badge-back) .id-no,
+  .badge:not(.badge-back) .valid{ display:none; }
+  .badge:not(.badge-back) .qr-box{ margin-top:1mm; }
 
   .note-box{
     max-width:620px; background:#fff3cd; border:1px solid #f1d78c; color:#6b5200;
@@ -262,7 +359,7 @@
   }
   .verify-text{text-align:right;flex:1;}
   .verify-title{font-size:2.2mm;font-weight:800;color:var(--navy);}
-  .verify-id,.verify-year{font-size:1.8mm;color:var(--muted);margin-top:1mm;}
+  .verify-id,.verify-year,.verify-stage{font-size:1.8mm;color:var(--muted);margin-top:1mm;}
   .qr-back{width:20mm;height:20mm;margin:0;flex:none;border:1px solid #d9e1e6;}
   .back-footer{
     width:100%;text-align:center;font-size:1.65mm;color:var(--muted);margin-top:2.5mm;
@@ -272,10 +369,15 @@
     body{background:#fff!important;padding:0!important;}
     body *{visibility:hidden;}
     .preview-col,.preview-col *{visibility:visible;}
+    .preview-label{ display:none!important; }
     .preview-col{
       position:static!important;display:flex!important;flex-direction:row!important;
       align-items:flex-start!important;justify-content:center!important;gap:8mm!important;
       width:100%!important;
+    }
+    .preview-stage{
+      display:flex!important;flex-direction:row!important;align-items:flex-start!important;
+      gap:8mm!important;width:auto!important;
     }
     .badge{
       position:static!important;transform:none!important;box-shadow:none!important;
@@ -286,10 +388,16 @@
 </style>
 </head>
 <body>
+  <noscript>
+    <div class="note-box">
+      هذا المولّد يحتاج إلى JavaScript حتى تعمل معاينة الصورة والتوليد والتصدير.
+    </div>
+  </noscript>
+
 
   <h1>مولّد الباج التعريفي — كلية طب الأسنان / جامعة البيان</h1>
   <p class="sub">
-    ارفع صورتك، اضبط القصّ، أدخل بياناتك، ثم ولّد باجك النهائي. الخدمة مجانية، ويمكنك إعادة التصميم وتوليد الباج عند الحاجة.
+    ارفع صورتك، اضبط القصّ، أدخل بياناتك، ثم ولّد باجك النهائي. إنشاء التصميم والمعاينة مجانيان. ويمكن طلب إصدار بطاقة جاهزة مقابل 5,000 دينار عراقي عبر تيليغرام.
   </p>
 
   <div class="layout">
@@ -320,22 +428,20 @@
       <div class="section-title" style="margin-top:20px;"><span class="step-num">2</span> بيانات الطالب</div>
       <div class="field">
         <label for="nameInput">الاسم الثلاثي (بدون لقب)</label>
-        <input type="text" id="nameInput" placeholder="مثال: أحمد صبري خلف" aria-describedby="nameError" maxlength="60">
+        <input type="text" id="nameInput" placeholder="مثال: أحمد صبري خلف" aria-describedby="nameError" maxlength="60" autocomplete="name" enterkeyhint="done">
         <div class="field-error" id="nameError" role="alert" aria-live="polite"></div>
       </div>
       <div class="field">
         <label for="stageInput">المرحلة الدراسية</label>
-        <select id="stageInput">
-          <option value="الأولى">الأولى</option>
-          <option value="الثانية">الثانية</option>
-          <option value="الثالثة">الثالثة</option>
+        <select id="stageInput" aria-describedby="stageHint">
           <option value="الرابعة" selected>الرابعة</option>
           <option value="الخامسة">الخامسة</option>
         </select>
+        <div class="upload-hint" id="stageHint">الباج مخصص لطلبة المرحلتين الرابعة والخامسة.</div>
       </div>
       <div class="field">
         <label for="idInput">رقم الطالب</label>
-        <input type="text" id="idInput" placeholder="مثال: 20310" inputmode="numeric" aria-describedby="idError" maxlength="10">
+        <input type="text" id="idInput" placeholder="مثال: 20310" inputmode="numeric" aria-describedby="idError" maxlength="10" autocomplete="off">
         <div class="field-error" id="idError" role="alert" aria-live="polite"></div>
       </div>
       <div class="field">
@@ -344,7 +450,28 @@
         <div class="field-error" id="yearError" role="alert" aria-live="polite"></div>
       </div>
 
+
+      <div class="ready-service" aria-label="خدمة إصدار بطاقة جاهزة">
+        <div class="ready-service-top">
+          <div>
+            <div class="ready-service-title">🪪 إصدار بطاقة جاهزة — خدمة اختيارية</div>
+            <div class="ready-service-desc">
+              إذا ما تريد تسوي الطباعة والتجهيز بنفسك، نجهز لك البطاقة جاهزة حسب البيانات والصورة المدخلة.
+            </div>
+          </div>
+          <div class="ready-price">5,000 <span>د.ع</span></div>
+        </div>
+        <div class="ready-service-note">
+          للتنسيق والطلب تواصل مباشرة عبر تيليغرام:
+          <strong dir="ltr">@STOP3</strong>
+        </div>
+        <a class="telegram-btn" href="https://t.me/STOP3" target="_blank" rel="noopener noreferrer">
+          ✈️ التواصل عبر تيليغرام
+        </a>
+      </div>
+
       <div class="section-title" style="margin-top:20px;"><span class="step-num">3</span> التوليد النهائي</div>
+      <div class="status-banner" id="statusBanner" role="alert" aria-live="assertive"></div>
       <div class="btn-row">
         <button class="btn btn-primary btn-block" id="generateBtn">🪪 توليد الباج النهائي</button>
       </div>
@@ -362,6 +489,8 @@
 
     <!-- ===== PREVIEW PANEL ===== -->
     <div class="preview-col">
+      <div class="preview-label">معاينة الباج — الوجه والخلف بنفس القياس</div>
+      <div class="preview-stage">
       <div class="badge" id="badgeCard">
         <div class="clip"></div>
         <div class="header">
@@ -381,18 +510,13 @@
         <div class="body">
           <div class="name-label">الاسم الثلاثي</div>
           <div class="name" id="badgeName">الاسم الثلاثي للطالب</div>
-          <div class="role-tag">طالب</div>
+          <div class="role-tag" id="badgeRole">طالب — المرحلة الرابعة</div>
           <div class="divider"></div>
           <div class="college-line">كلية طب الأسنان<br><span class="uni">جامعة البيان</span></div>
-          <div class="stage-block">
-            <div class="stage-caption">المرحلة الدراسية</div>
-            <div class="stage-value" id="badgeStage">الرابعة</div>
-          </div>
+
         </div>
         <div class="footer">
-          <div class="id-no" id="badgeId">رقم الطالب: ----</div>
           <div class="qr-box" id="qrFront"></div>
-          <div class="valid">العام الدراسي <span id="badgeYear">2026-2027</span></div>
         </div>
       </div>
       <div class="badge badge-back" id="badgeBack">
@@ -418,6 +542,7 @@
             <div class="verify-text">
               <div class="verify-title">تحقق من بيانات البطاقة</div>
               <div class="verify-id" id="backId">رقم الطالب: ----</div>
+              <div class="verify-stage">المرحلة الدراسية: <span id="backStage">الرابعة</span></div>
               <div class="verify-year">العام الدراسي <span id="backYear">2026-2027</span></div>
             </div>
             <div class="qr-box qr-back" id="qrBack"></div>
@@ -428,11 +553,14 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
   </div>
 
   <div class="note-box">
     <strong>ملاحظة:</strong> يمنع دخول الطالب المخالف للتعليمات إلى العيادات والمختبرات. الباج إلزامي لطلبة المرحلتين الرابعة والخامسة، ويُثبّت على الصدرية الطبية. يمنع كتابة اللقب أو إضافة كلمة "دكتور" قبل الاسم.
+    <br><br>
+    <strong>خدمة اختيارية:</strong> إصدار بطاقة جاهزة مقابل <strong>5,000 د.ع</strong>. للطلب والتنسيق: <strong dir="ltr">@STOP3</strong>.
   </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -446,10 +574,11 @@
   const idInput = $('idInput');
   const yearInput = $('yearInput');
   const badgeName = $('badgeName');
-  const badgeStage = $('badgeStage');
+  const badgeRole = $('badgeRole');
   const badgeId = $('badgeId');
   const badgeYear = $('badgeYear');
   const backId = $('backId');
+  const backStage = $('backStage');
   const backYear = $('backYear');
 
   function updateQR(){
@@ -472,12 +601,11 @@
 
   function updateText(){
     badgeName.textContent = nameInput.value.trim() || "الاسم الثلاثي للطالب";
-    badgeStage.textContent = stageInput.value;
+    badgeRole.textContent = "طالب — المرحلة " + stageInput.value;
     const id = idInput.value.trim() || "----";
     const year = yearInput.value.trim() || "2026-2027";
-    badgeId.textContent = "رقم الطالب: " + id;
     backId.textContent = "رقم الطالب: " + id;
-    badgeYear.textContent = year;
+    backStage.textContent = stageInput.value;
     backYear.textContent = year;
     updateQR();
   }
@@ -500,13 +628,20 @@
 
   const CW=cropCanvas.width, CH=cropCanvas.height;
   let img=null,baseScale=1,zoom=1,posX=0,posY=0,dragging=false,lastX=0,lastY=0;
+  let photoConfirmed=false;
 
   const MAX_PHOTO_MB = 8;
   const ALLOWED_TYPES = ['image/jpeg','image/png','image/webp'];
 
-  // اضغط أو استخدم لوحة المفاتيح لفتح منتقي الملفات (كان بدون معالج ضغط سابقاً)
-  uploadBox.addEventListener('click',()=>photoInput.click());
+  // اضغط أو استخدم لوحة المفاتيح لفتح منتقي الملفات
+  // ملاحظة: input الملف موجود داخل uploadBox نفسه، فلو ضغطنا عليه مباشرة
+  // فالحدث سيصعد (bubble) ويشغّل نفس المعالج مرتين — نتحقق من target لمنع هذا.
+  uploadBox.addEventListener('click',e=>{
+    if(e.target === photoInput) return;
+    photoInput.click();
+  });
   uploadBox.addEventListener('keydown',e=>{
+    if(e.target === photoInput) return;
     if(e.key==='Enter'||e.key===' '){ e.preventDefault(); photoInput.click(); }
   });
 
@@ -514,6 +649,7 @@
     const file=e.target.files[0]; if(!file)return;
     photoError.textContent='';
     uploadBox.classList.remove('invalid');
+    photoConfirmed=false;
 
     if(!ALLOWED_TYPES.includes(file.type)){
       photoError.textContent='صيغة الصورة غير مدعومة. الرجاء اختيار JPG أو PNG أو WEBP.';
@@ -592,6 +728,7 @@
     if(!img)return;
     badgePhoto.src=cropCanvas.toDataURL('image/jpeg',.92);
     badgePhoto.style.display='block';phIcon.style.display='none';
+    photoConfirmed=true;
     confirmCropBtn.textContent='✅ تم تثبيت الصورة (يمكنك تعديلها قبل التوليد)';
   });
 
@@ -639,69 +776,191 @@
   idInput.addEventListener('blur',validateId);
   yearInput.addEventListener('blur',validateYear);
 
+  // بديل عن confirm()/alert(): بعض المتصفحات المدمجة (واتساب، انستغرام، فيسبوك)
+  // تمنع ظهور هذي النوافذ تماماً وترجع false بصمت، فيبدو للمستخدم أن الزر "ما يشتغل".
+  // لهذا صار التنبيه عنصر مرئي داخل الصفحة بدل نافذة المتصفح.
+  const statusBanner = $('statusBanner');
+  let pendingNoPhotoConfirm = false;
+
+  function showBanner(type, message, actions){
+    statusBanner.className = 'status-banner show ' + type;
+    statusBanner.innerHTML = message;
+    if(actions && actions.length){
+      const row = document.createElement('div');
+      row.className = 'banner-actions';
+      actions.forEach(a=>{
+        const b = document.createElement('button');
+        b.type = 'button'; b.textContent = a.label;
+        b.addEventListener('click', a.onClick);
+        row.appendChild(b);
+      });
+      statusBanner.appendChild(row);
+    }
+  }
+  function hideBanner(){
+    statusBanner.className = 'status-banner';
+    statusBanner.innerHTML = '';
+  }
+
+  function runGenerate(){
+    updateText(); updateQR();
+    printBtn.disabled=false; pngBtn.disabled=false; jpgBtn.disabled=false;
+    hideBanner();
+    pendingNoPhotoConfirm = false;
+  }
+
   generateBtn.addEventListener('click',()=>{
     const nameOk = validateName();
     const idOk = validateId();
     const yearOk = validateYear();
-    if(!nameOk){ nameInput.focus(); return; }
-    if(!idOk){ idInput.focus(); return; }
-    if(!yearOk){ yearInput.focus(); return; }
-    if(!badgePhoto.src){
-      if(!confirm('لم تقم بتثبيت صورة شخصية. هل تريد المتابعة بدون صورة؟'))return;
+    if(!nameOk){ nameInput.focus(); pendingNoPhotoConfirm=false; return; }
+    if(!idOk){ idInput.focus(); pendingNoPhotoConfirm=false; return; }
+    if(!yearOk){ yearInput.focus(); pendingNoPhotoConfirm=false; return; }
+
+    if(!photoConfirmed && !pendingNoPhotoConfirm){
+      pendingNoPhotoConfirm = true;
+      showBanner('warn','⚠️ لم تقم بتثبيت صورة شخصية. اضغط "توليد الباج النهائي" مرة أخرى للمتابعة بدون صورة، أو ارفع صورة أولاً من الأعلى.',[
+        { label:'المتابعة بدون صورة', onClick: runGenerate }
+      ]);
+      return;
     }
-    updateText(); updateQR();
-    printBtn.disabled=false; pngBtn.disabled=false; jpgBtn.disabled=false;
+    runGenerate();
   });
 
-  printBtn.addEventListener('click',()=>{
-    if(!validateName()||!validateId()||!validateYear()){
-      alert('في بيانات غير صحيحة. تأكد من الاسم ورقم الطالب والعام الدراسي قبل الطباعة.');
-      return;
-    }
-    window.print(); // ما تغيّر أي شيء بمخرجات الطباعة نفسها، فقط تحقق قبل التنفيذ
-  });
+  // أي تعديل على البيانات يلغي حالة "التأكيد المعلّق" حتى لا تولّد بضغطة واحدة بالخطأ
+  [nameInput, stageInput, idInput, yearInput].forEach(el=>el.addEventListener('input',()=>{ pendingNoPhotoConfirm=false; }));
+  stageInput.addEventListener('change',()=>{ pendingNoPhotoConfirm=false; });
 
-  async function downloadBadge(type){
+  function dataReadyForOutput(){
     if(!validateName()||!validateId()||!validateYear()){
-      alert('في بيانات غير صحيحة. تأكد من الاسم ورقم الطالب والعام الدراسي قبل التحميل.');
-      return;
+      showBanner('error','⚠️ في بيانات غير صحيحة. تأكد من الاسم ورقم الطالب والعام الدراسي قبل المتابعة.');
+      return false;
     }
-    if(!window.html2canvas){
-      alert('جاري تجهيز أداة التحميل، حاول مرة أخرى بعد لحظات.');
-      return;
-    }
-    const cards=[$('badgeCard'),$('badgeBack')];
-    const canvases=[];
-    for(const card of cards){
-      const c=await html2canvas(card,{scale:3,useCORS:true,backgroundColor:"#ffffff"});
-      canvases.push(c);
-    }
-    const gap=30, w=canvases[0].width+canvases[1].width+gap, h=Math.max(canvases[0].height,canvases[1].height);
-    const out=document.createElement('canvas');out.width=w;out.height=h;
-    const octx=out.getContext('2d');octx.fillStyle="#fff";octx.fillRect(0,0,w,h);
-    octx.drawImage(canvases[0],0,0);octx.drawImage(canvases[1],canvases[0].width+gap,0);
-    const mime=type==="png"?"image/png":"image/jpeg";
-    const ext=type==="png"?"png":"jpg";
-    const a=document.createElement('a');a.href=out.toDataURL(mime,.95);a.download="badge-front-back."+ext;a.click();
+    return true;
   }
 
-  pngBtn.addEventListener('click',()=>downloadBadge("png"));
-  jpgBtn.addEventListener('click',()=>downloadBadge("jpg"));
+  printBtn.addEventListener('click',()=>{
+    if(!dataReadyForOutput()) return;
+    hideBanner();
+    window.print(); // ما تغيّر أي شيء بمخرجات الطباعة نفسها أو بتنسيقها، فقط تحقق قبل التنفيذ
+  });
 
+  const EXPORT_LIB_TIMEOUT_MS = 8000;
+  let exportBusy = false;
+  function waitForHtml2Canvas(){
+    if(window.html2canvas) return Promise.resolve(true);
+    return new Promise(resolve=>{
+      const start = Date.now();
+      const iv = setInterval(()=>{
+        if(window.html2canvas){ clearInterval(iv); resolve(true); }
+        else if(Date.now()-start > EXPORT_LIB_TIMEOUT_MS){ clearInterval(iv); resolve(false); }
+      },200);
+    });
+  }
+
+  async function downloadBadge(type){
+    if(exportBusy) return;
+    if(!dataReadyForOutput()) return;
+
+    exportBusy = true;
+    const activeBtn = type === "png" ? pngBtn : jpgBtn;
+    const originalLabel = activeBtn.textContent;
+    pngBtn.disabled=true; jpgBtn.disabled=true; printBtn.disabled=true;
+    activeBtn.textContent = "⏳ جاري التجهيز...";
+
+    try{
+      hideBanner();
+      const ready = await waitForHtml2Canvas();
+      if(!ready){
+        showBanner('error','تعذّر تحميل أداة تصدير الصورة. تأكد من اتصالك بالإنترنت ثم أعد المحاولة.',[
+          { label:'إعادة المحاولة', onClick:()=>downloadBadge(type).catch(()=>{}) }
+        ]);
+        return;
+      }
+
+      const cards=[$('badgeCard'),$('badgeBack')];
+      const canvases=[];
+      for(const card of cards){
+        const c=await html2canvas(card,{
+          scale:Math.min(6, Math.max(3, window.devicePixelRatio || 1)),
+          useCORS:true,
+          allowTaint:false,
+          backgroundColor:'#ffffff',
+          logging:false
+        });
+        canvases.push(c);
+      }
+
+      const gap=30;
+      const w=canvases[0].width+canvases[1].width+gap;
+      const h=Math.max(canvases[0].height,canvases[1].height);
+      const out=document.createElement('canvas');
+      out.width=w; out.height=h;
+      const octx=out.getContext('2d');
+      octx.fillStyle='#fff'; octx.fillRect(0,0,w,h);
+      octx.drawImage(canvases[0],0,0);
+      octx.drawImage(canvases[1],canvases[0].width+gap,0);
+
+      const mime=type==='png'?'image/png':'image/jpeg';
+      const ext=type==='png'?'png':'jpg';
+      const a=document.createElement('a');
+      a.href=out.toDataURL(mime,.95);
+      a.download='badge-front-back.'+ext;
+      a.click();
+    } finally {
+      exportBusy = false;
+      activeBtn.textContent=originalLabel;
+      pngBtn.disabled=false; jpgBtn.disabled=false; printBtn.disabled=false;
+    }
+  }
+
+  pngBtn.addEventListener('click',()=>downloadBadge("png").catch(err=>{
+    console.error(err);
+    pngBtn.disabled=false; jpgBtn.disabled=false; printBtn.disabled=false;
+    showBanner('error','⚠️ تعذّر إنشاء ملف الصورة. جرّب مرة أخرى.');
+  }));
+  jpgBtn.addEventListener('click',()=>downloadBadge("jpg").catch(err=>{
+    console.error(err);
+    pngBtn.disabled=false; jpgBtn.disabled=false; printBtn.disabled=false;
+    showBanner('error','⚠️ تعذّر إنشاء ملف الصورة. جرّب مرة أخرى.');
+  }));
+
+  let pendingRedoConfirm = false;
   redoBtn.addEventListener('click',()=>{
-    if(!confirm('هل أنت متأكد؟ سيتم مسح جميع البيانات والصورة المدخلة ولا يمكن التراجع.'))return;
+    if(!pendingRedoConfirm){
+      pendingRedoConfirm = true;
+      showBanner('warn','⚠️ هل أنت متأكد؟ سيتم مسح جميع البيانات والصورة المدخلة ولا يمكن التراجع.',[
+        { label:'نعم، امسح كل شيء', onClick: doRedo }
+      ]);
+      return;
+    }
+    doRedo();
+  });
+
+  function doRedo(){
+    pendingRedoConfirm = false;
     nameInput.value="";idInput.value="";stageInput.value="الرابعة";yearInput.value="2026-2027";
-    badgePhoto.src="";badgePhoto.style.display="none";phIcon.style.display="block";
+    badgePhoto.removeAttribute('src');badgePhoto.style.display="none";phIcon.style.display="block";
+    photoConfirmed=false;
     cropArea.classList.remove('active');img=null;
     zoom=1; posX=0; posY=0; zoomRange.value=100;
-    photoInput.value=""; ctx.clearRect(0,0,CW,CH);
+    photoInput.value="";
+    ctx.clearRect(0,0,CW,CH);
+    hideBanner();
     confirmCropBtn.textContent="✅ تثبيت الصورة على الباج";
     setFieldError(nameInput,nameError,''); setFieldError(idInput,idError,''); setFieldError(yearInput,yearError,'');
     photoError.textContent=''; uploadBox.classList.remove('invalid');
-    printBtn.disabled=true;pngBtn.disabled=true;jpgBtn.disabled=true;updateText();
-  });
+    printBtn.disabled=true;pngBtn.disabled=true;jpgBtn.disabled=true;
+    updateText();
+  }
 
   updateText();
+  // إذا تأخر تحميل مكتبة QR بسبب الاتصال، نحاول توليد الرموز تلقائياً بعد تحميل الصفحة.
+  let qrRetryCount=0;
+  const qrRetryTimer=setInterval(()=>{
+    if(window.QRCode){ updateQR(); clearInterval(qrRetryTimer); }
+    else if(++qrRetryCount>=20){ clearInterval(qrRetryTimer); }
+  },500);
 })();
 </script>
 </body>
