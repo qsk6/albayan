@@ -522,6 +522,12 @@
       box-shadow: 0 1mm 3mm rgba(0,0,0,.25);
     }
 
+    .logo svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
     .uni-name {
       margin-top: 1.5mm;
       font-size: 3.1mm;
@@ -1018,7 +1024,20 @@
             <div class="clip"></div>
 
             <div class="badge-header">
-              <div class="logo">ب</div>
+              <div class="logo" aria-hidden="true">
+                <svg viewBox="0 0 100 100" role="img">
+                  <defs>
+                    <linearGradient id="bu-grad-front" x1="0" x2="1" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#1f4f73" />
+                      <stop offset="100%" stop-color="#0a2a43" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="49" fill="#ffffff" />
+                  <circle cx="50" cy="50" r="45" fill="url(#bu-grad-front)" />
+                  <path d="M50 18C36 18 26 29 26 43c0 18 16 29 24 39 8-10 24-21 24-39 0-14-10-25-24-25z" fill="#d8b55b" fill-opacity=".2" />
+                  <text x="50" y="63" text-anchor="middle" font-size="43" font-weight="800" fill="#ffffff" font-family="'Tajawal', Arial, sans-serif">ب</text>
+                </svg>
+              </div>
               <div class="uni-name">جامعة البيان</div>
               <div class="college-name">كلية طب الأسنان</div>
               <div class="gold-line"></div>
@@ -1051,7 +1070,20 @@
 
           <article id="badgeBack" class="badge back-card">
             <div class="back-header">
-              <div class="logo">ب</div>
+              <div class="logo" aria-hidden="true">
+                <svg viewBox="0 0 100 100" role="img">
+                  <defs>
+                    <linearGradient id="bu-grad-back" x1="0" x2="1" y1="0" y2="1">
+                      <stop offset="0%" stop-color="#1f4f73" />
+                      <stop offset="100%" stop-color="#0a2a43" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="50" cy="50" r="49" fill="#ffffff" />
+                  <circle cx="50" cy="50" r="45" fill="url(#bu-grad-back)" />
+                  <path d="M50 18C36 18 26 29 26 43c0 18 16 29 24 39 8-10 24-21 24-39 0-14-10-25-24-25z" fill="#d8b55b" fill-opacity=".2" />
+                  <text x="50" y="63" text-anchor="middle" font-size="43" font-weight="800" fill="#ffffff" font-family="'Tajawal', Arial, sans-serif">ب</text>
+                </svg>
+              </div>
               <div class="uni-name">جامعة البيان</div>
               <div class="college-name">كلية طب الأسنان</div>
               <div class="gold-line"></div>
@@ -1181,7 +1213,10 @@
         lastY: 0,
         photoConfirmed: false,
         generated: false,
-        exporting: false
+        exporting: false,
+        qrUpdateTimer: null,
+        qrReadyPromise: null,
+        canvasReadyPromise: null
       };
 
       const patterns = {
@@ -1291,13 +1326,51 @@
         });
       }
 
+      function waitForQrLibrary() {
+        if (window.qrLibraryFailed) return Promise.resolve(false);
+
+        if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+          return Promise.resolve(true);
+        }
+
+        if (!state.qrReadyPromise) {
+          state.qrReadyPromise = waitUntil(
+            () => window.qrLibraryFailed || (
+              window.QRCode &&
+              typeof window.QRCode.toCanvas === 'function'
+            ),
+            6000
+          );
+        }
+
+        return state.qrReadyPromise.then(() =>
+          Boolean(window.QRCode && typeof window.QRCode.toCanvas === 'function')
+        );
+      }
+
+      function waitForCanvasLibrary() {
+        if (window.canvasLibraryFailed) return Promise.resolve(false);
+
+        if (typeof window.html2canvas === 'function') {
+          return Promise.resolve(true);
+        }
+
+        if (!state.canvasReadyPromise) {
+          state.canvasReadyPromise = waitUntil(
+            () => window.canvasLibraryFailed || typeof window.html2canvas === 'function',
+            6000
+          );
+        }
+
+        return state.canvasReadyPromise.then(() =>
+          typeof window.html2canvas === 'function'
+        );
+      }
+
       async function renderQR(element, data, size) {
         element.innerHTML = '';
 
-        const ready = await waitUntil(() =>
-          window.QRCode &&
-          typeof window.QRCode.toCanvas === 'function'
-        );
+        const ready = await waitForQrLibrary();
 
         if (!ready) {
           element.textContent = 'QR';
@@ -1341,6 +1414,15 @@
         ]);
       }
 
+      function requestQRUpdate() {
+        clearTimeout(state.qrUpdateTimer);
+        state.qrUpdateTimer = setTimeout(() => {
+          updateQR().catch(error => {
+            console.error('QR update error:', error);
+          });
+        }, 60);
+      }
+
       function updatePreviewText() {
         const name = els.nameInput.value.trim() || 'الاسم الثلاثي للطالب';
         const stage = els.stageInput.value;
@@ -1356,7 +1438,7 @@
 
       function updatePreview() {
         updatePreviewText();
-        updateQR();
+        requestQRUpdate();
       }
 
       function validateName() {
@@ -1612,10 +1694,10 @@
       }
 
       async function captureBadge(element) {
-        const ready = await waitUntil(() => typeof window.html2canvas === 'function');
+        const ready = await waitForCanvasLibrary();
 
         if (!ready) {
-          throw new Error('تعذر تحميل أداة تصدير الصور.');
+          throw new Error('تعذر تحميل أداة التصدير. تحقق من الاتصال ثم أعد المحاولة.');
         }
 
         return window.html2canvas(element, {
@@ -1628,8 +1710,67 @@
         });
       }
 
+      function sanitizeFilePart(value) {
+        return String(value || '')
+          .trim()
+          .replace(/[\\/:*?"<>|]/g, '-')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+
+      function downloadCanvas(canvas, type, fileName) {
+        const mime = type === 'png' ? 'image/png' : 'image/jpeg';
+        const quality = type === 'png' ? undefined : .95;
+
+        return new Promise((resolve, reject) => {
+          const triggerDownload = (href, revokeObjectUrl = false) => {
+            const link = document.createElement('a');
+            link.download = fileName;
+            link.href = href;
+            link.rel = 'noopener';
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+
+            if (revokeObjectUrl) {
+              setTimeout(() => URL.revokeObjectURL(href), 1200);
+            }
+
+            resolve();
+          };
+
+          if (typeof canvas.toBlob === 'function') {
+            canvas.toBlob(blob => {
+              if (blob) {
+                triggerDownload(URL.createObjectURL(blob), true);
+                return;
+              }
+
+              try {
+                triggerDownload(canvas.toDataURL(mime, quality));
+              } catch (error) {
+                reject(error);
+              }
+            }, mime, quality);
+            return;
+          }
+
+          try {
+            triggerDownload(canvas.toDataURL(mime, quality));
+          } catch (error) {
+            reject(error);
+          }
+        });
+      }
+
       async function exportBadge(type) {
         if (state.exporting) return;
+
+        if (!state.generated) {
+          showStatus('warning', 'ولّد الباج أولاً قبل التصدير.');
+          return;
+        }
 
         if (!validateAll()) {
           showStatus('error', 'يرجى تصحيح البيانات قبل التصدير.');
@@ -1648,6 +1789,7 @@
 
         try {
           updatePreview();
+          await updateQR();
 
           const [frontCanvas, backCanvas] = await Promise.all([
             captureBadge(els.badgeFront),
@@ -1686,13 +1828,11 @@
             margin
           );
 
-          const mime = type === 'png' ? 'image/png' : 'image/jpeg';
           const extension = type === 'png' ? 'png' : 'jpg';
-
-          const link = document.createElement('a');
-          link.download = `badge-front-back.${extension}`;
-          link.href = output.toDataURL(mime, .95);
-          link.click();
+          const namePart = sanitizeFilePart(els.nameInput.value) || 'student';
+          const idPart = sanitizeFilePart(els.idInput.value) || 'id';
+          const fileName = `badge-${namePart}-${idPart}.${extension}`;
+          await downloadCanvas(output, type, fileName);
 
           showStatus(
             'success',
@@ -1707,9 +1847,9 @@
         } finally {
           state.exporting = false;
           button.textContent = oldText;
-          els.pngBtn.disabled = false;
-          els.jpgBtn.disabled = false;
-          els.printBtn.disabled = false;
+          els.pngBtn.disabled = !state.generated;
+          els.jpgBtn.disabled = !state.generated;
+          els.printBtn.disabled = !state.generated;
         }
       }
 
@@ -1736,7 +1876,7 @@
         els.jpgBtn.disabled = true;
 
         updatePreviewText();
-        updateQR();
+        requestQRUpdate();
 
         showStatus('success', 'تمت إعادة التصميم ومسح البيانات.');
       }
@@ -1863,7 +2003,7 @@
 
       initTheme();
       updatePreviewText();
-      updateQR();
+      requestQRUpdate();
     })();
   </script>
 </body>
