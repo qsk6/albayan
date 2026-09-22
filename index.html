@@ -1,6 +1,23 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+<script>
+  // أداة تشخيص مؤقتة: تعرض أي خطأ برمجي كشريط أحمر أعلى الصفحة
+  // حتى يمكن تصويره وإرساله للمطوّر بدون فتح أدوات المطور.
+  function __showJsError(msg){
+    function append(){
+      var el = document.createElement('div');
+      el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:999999;background:#b3261e;color:#fff;padding:10px 14px;font-size:12px;direction:ltr;text-align:left;white-space:pre-wrap;font-family:monospace;box-shadow:0 2px 8px rgba(0,0,0,.3);';
+      el.textContent = msg;
+      (document.body || document.documentElement).appendChild(el);
+    }
+    if(document.body) append();
+    else document.addEventListener('DOMContentLoaded', append);
+  }
+  window.addEventListener('error', function(e){
+    __showJsError('⚠️ JS Error: ' + e.message + '  |  file: ' + (e.filename||'').split('/').pop() + '  |  line: ' + e.lineno);
+  });
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>مولّد الباج التعريفي - كلية طب الأسنان / جامعة البيان</title>
