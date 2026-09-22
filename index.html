@@ -376,10 +376,10 @@
     margin-top:auto;width:100%;display:flex;align-items:center;justify-content:space-between;
     gap:3mm;border-top:1px solid #dfe6ea;padding-top:2.5mm;
   }
-  .verify-text{text-align:right;flex:1;}
+  .verify-text{text-align:right;flex:1;min-width:0;}
   .verify-title{font-size:2.2mm;font-weight:800;color:var(--navy);}
   .verify-id,.verify-year,.verify-stage{font-size:1.8mm;color:var(--muted);margin-top:1mm;}
-  .qr-back{width:20mm;height:20mm;margin:0;flex:none;border:1px solid #d9e1e6;}
+  .qr-back{width:26mm;height:26mm;margin:0;flex:none;border:1px solid #d9e1e6;}
   .back-footer{
     width:100%;text-align:center;font-size:1.65mm;color:var(--muted);margin-top:2.5mm;
     padding-top:1.5mm;border-top:1px solid #edf0f2;
@@ -571,13 +571,6 @@
           <div class="back-title">بطاقة تعريف الطالب</div>
           <div class="back-note">هذه البطاقة تعريفية خاصة بالطالب، ويجب إبرازها عند الطلب داخل الكلية.</div>
 
-          <div class="rules">
-            <div>• البطاقة شخصية وغير قابلة للتحويل.</div>
-            <div>• المحافظة على البطاقة مسؤولية حاملها.</div>
-            <div>• في حال العثور عليها، يرجى تسليمها إلى الكلية.</div>
-            <div>• لا تُستخدم كوثيقة رسمية خارج أغراض التعريف الجامعي.</div>
-          </div>
-
           <div class="verify-card">
             <div class="verify-text">
               <div class="verify-title">تحقق من بيانات البطاقة</div>
@@ -684,7 +677,7 @@
       const el=$(id); if(!el) return;
       if(!window.QRCode || typeof window.QRCode.toCanvas !== "function") return; // المكتبة لسا ما تحمّلت، المؤقت أدناه بيعيد المحاولة
       el.innerHTML="";
-      const size = id==="qrBack" ? 150 : 100;
+      const size = id==="qrBack" ? 220 : 100;
       const canvas = document.createElement("canvas");
       el.appendChild(canvas);
       window.QRCode.toCanvas(canvas, data, {
@@ -996,6 +989,137 @@
     });
   }
 
+  // ===== إصلاح جذري لمشكلتين معروفتين بمكتبة html2canvas =====
+  // 1) لا ترسم النص العربي بشكل صحيح أحياناً (يظهر مبعثر/مقلوب الحروف).
+  // 2) لا تلتقط دائماً محتوى عناصر <canvas> المرسومة بمكتبات خارجية (كالباركود).
+  // الحل: قبيل التصدير، نحوّل كل نص عربي إلى صورة مرسومة عبر Canvas 2D (يستخدم محرك
+  // الخطوط الحقيقي بالمتصفح فيطلع صحيحاً)، ونحوّل الباركود من <canvas> إلى <img>
+  // بصورته الجاهزة. نعيد كل شيء لوضعه الطبيعي بعد التصدير مباشرة.
+
+  const INLINE_TAGS = new Set(['SPAN','STRONG','EM','SMALL','B','I']);
+
+  function isTextUnit(el){
+    if(!el || el.nodeType !== 1) return false;
+    if(el.tagName === 'CANVAS' || el.tagName === 'IMG' || el.tagName === 'SVG') return false;
+    const childEls = Array.from(el.children);
+    if(childEls.some(c => !INLINE_TAGS.has(c.tagName) && c.tagName !== 'BR')) return false;
+    const txt = el.textContent.replace(/\s+/g,'').trim();
+    return txt.length > 0;
+  }
+
+  function collectTextUnits(root, out){
+    Array.from(root.children).forEach(el=>{
+      if(el.classList && el.classList.contains('qr-box')) return; // يعالَج بشكل منفصل
+      if(isTextUnit(el)) out.push(el);
+      else collectTextUnits(el, out);
+    });
+  }
+
+  function extractLines(el){
+    const lines = [''];
+    el.childNodes.forEach(node=>{
+      if(node.nodeType === 3){
+        lines[lines.length-1] += node.textContent;
+      } else if(node.tagName === 'BR'){
+        lines.push('');
+      } else {
+        lines[lines.length-1] += node.textContent;
+      }
+    });
+    return lines.map(l=>l.trim()).filter(l=>l.length>0);
+  }
+
+  function computeTextImageDataUrl(el, w, h){
+    const cs = getComputedStyle(el);
+    const scale = 4;
+    const cw = Math.max(1, Math.round(w));
+    const ch = Math.max(1, Math.round(h));
+    const canvas = document.createElement('canvas');
+    canvas.width = cw*scale; canvas.height = ch*scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    const fontWeight = cs.fontWeight || '400';
+    const fontStyle = cs.fontStyle || 'normal';
+    const fontSize = parseFloat(cs.fontSize) || 14;
+    const fontFamily = cs.fontFamily || '"Tahoma","Segoe UI",Arial,sans-serif';
+    ctx.font = `${fontStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+    ctx.fillStyle = cs.color;
+    ctx.direction = 'rtl';
+    ctx.textBaseline = 'middle';
+    const rawAlign = cs.textAlign;
+    const align = (rawAlign === 'start' || rawAlign === '') ? 'right' : (rawAlign === 'end' ? 'left' : rawAlign);
+    ctx.textAlign = align;
+    const x = align === 'right' ? cw : align === 'left' ? 0 : cw/2;
+
+    const rawLines = extractLines(el);
+    const wrapped = [];
+    rawLines.forEach(line=>{
+      const words = line.split(' ');
+      let cur = '';
+      words.forEach(word=>{
+        const test = cur ? cur+' '+word : word;
+        if(ctx.measureText(test).width > cw && cur){ wrapped.push(cur); cur = word; }
+        else cur = test;
+      });
+      if(cur) wrapped.push(cur);
+    });
+
+    const lineHeightPx = parseFloat(cs.lineHeight) || fontSize*1.3;
+    const totalH = wrapped.length*lineHeightPx;
+    let startY = Math.max(lineHeightPx/2, (ch-totalH)/2 + lineHeightPx/2);
+    wrapped.forEach((ln,i)=>{ ctx.fillText(ln, x, startY+i*lineHeightPx); });
+    return canvas.toDataURL('image/png');
+  }
+
+  async function swapTextForCapture(root){
+    const units = [];
+    collectTextUnits(root, units);
+    const rootRect = root.getBoundingClientRect();
+    const prevPosition = root.style.position;
+    if(!prevPosition) root.style.position = 'relative';
+    const restores = [];
+    const loadPromises = [];
+    units.forEach(el=>{
+      const rect = el.getBoundingClientRect();
+      if(rect.width<=0 || rect.height<=0) return;
+      const dataUrl = computeTextImageDataUrl(el, rect.width, rect.height);
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      img.style.cssText = `position:absolute;left:${rect.left-rootRect.left}px;top:${rect.top-rootRect.top}px;width:${rect.width}px;height:${rect.height}px;z-index:99999;pointer-events:none;`;
+      root.appendChild(img);
+      loadPromises.push(img.decode ? img.decode().catch(()=>{}) : new Promise(res=>{ img.onload=res; img.onerror=res; }));
+      const prevVis = el.style.visibility;
+      el.style.visibility = 'hidden';
+      restores.push(()=>{ el.style.visibility = prevVis; img.remove(); });
+    });
+    await Promise.all(loadPromises);
+    restores.push(()=>{ if(!prevPosition) root.style.position = ''; });
+    return ()=> restores.forEach(fn=>fn());
+  }
+
+  async function swapQrCanvasForImage(root){
+    const canvases = root.querySelectorAll('canvas');
+    const restores = [];
+    const loadPromises = [];
+    canvases.forEach(c=>{
+      let dataUrl;
+      try{ dataUrl = c.toDataURL('image/png'); } catch(e){ return; }
+      const img = document.createElement('img');
+      img.src = dataUrl;
+      const w = c.style.width || (c.width+'px');
+      const h = c.style.height || (c.height+'px');
+      img.style.cssText = `width:${w};height:${h};display:block;`;
+      c.parentNode.insertBefore(img, c);
+      c.style.display = 'none';
+      loadPromises.push(img.decode ? img.decode().catch(()=>{}) : new Promise(res=>{ img.onload=res; img.onerror=res; }));
+      restores.push(()=>{ img.remove(); c.style.display=''; });
+    });
+    await Promise.all(loadPromises);
+    return ()=> restores.forEach(fn=>fn());
+  }
+  // ===== نهاية الإصلاح =====
+
   async function downloadBadge(type){
     if(exportBusy) return;
     if(!dataReadyForOutput()) return;
@@ -1019,25 +1143,33 @@
       const cards=[$('badgeCard'),$('badgeBack')];
       const canvases=[];
       for(const card of cards){
-        const c=await html2canvas(card,{
-          scale:Math.min(6, Math.max(3, window.devicePixelRatio || 1)),
-          useCORS:true,
-          allowTaint:false,
-          backgroundColor:'#ffffff',
-          logging:false
-        });
-        canvases.push(c);
+        const restoreQr = await swapQrCanvasForImage(card);
+        const restoreText = await swapTextForCapture(card);
+        try{
+          const c=await html2canvas(card,{
+            scale:Math.min(6, Math.max(3, window.devicePixelRatio || 1)),
+            useCORS:true,
+            allowTaint:false,
+            backgroundColor:'#ffffff',
+            logging:false
+          });
+          canvases.push(c);
+        } finally {
+          restoreText();
+          restoreQr();
+        }
       }
 
       const gap=30;
-      const w=canvases[0].width+canvases[1].width+gap;
-      const h=Math.max(canvases[0].height,canvases[1].height);
+      const margin=80; // هامش أبيض واسع حول البطاقتين لتسهيل القص لاحقاً
+      const w=canvases[0].width+canvases[1].width+gap+margin*2;
+      const h=Math.max(canvases[0].height,canvases[1].height)+margin*2;
       const out=document.createElement('canvas');
       out.width=w; out.height=h;
       const octx=out.getContext('2d');
       octx.fillStyle='#fff'; octx.fillRect(0,0,w,h);
-      octx.drawImage(canvases[0],0,0);
-      octx.drawImage(canvases[1],canvases[0].width+gap,0);
+      octx.drawImage(canvases[0],margin,margin);
+      octx.drawImage(canvases[1],margin+canvases[0].width+gap,margin);
 
       const mime=type==='png'?'image/png':'image/jpeg';
       const ext=type==='png'?'png':'jpg';
