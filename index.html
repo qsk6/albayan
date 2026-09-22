@@ -15,7 +15,8 @@
     else document.addEventListener('DOMContentLoaded', append);
   }
   window.addEventListener('error', function(e){
-    __showJsError('⚠️ JS Error: ' + e.message + '  |  file: ' + (e.filename||'').split('/').pop() + '  |  line: ' + e.lineno);
+    var extra = (e.error && e.error.stack) ? ('\n' + e.error.stack.split('\n').slice(0,3).join('\n')) : '';
+    __showJsError('⚠️ JS Error: ' + e.message + '  |  file: ' + (e.filename||'').split('/').pop() + '  |  line: ' + e.lineno + extra);
   });
 </script>
 <meta charset="UTF-8">
@@ -602,8 +603,8 @@
     <strong>خدمة اختيارية:</strong> إصدار بطاقة جاهزة مقابل <strong>5,000 د.ع</strong>. للطلب والتنسيق: <strong dir="ltr">@STOP3</strong>.
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
 <script>
 (function(){
   const $ = id => document.getElementById(id);
