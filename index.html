@@ -603,8 +603,8 @@
     <strong>خدمة اختيارية:</strong> إصدار بطاقة جاهزة مقابل <strong>5,000 د.ع</strong>. للطلب والتنسيق: <strong dir="ltr">@STOP3</strong>.
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js" crossorigin="anonymous" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" crossorigin="anonymous" defer></script>
 <script>
 (function(){
   const $ = id => document.getElementById(id);
@@ -682,10 +682,19 @@
     const data = buildQRContent();
     ["qrFront","qrBack"].forEach(id=>{
       const el=$(id); if(!el) return;
+      if(!window.QRCode || typeof window.QRCode.toCanvas !== "function") return; // المكتبة لسا ما تحمّلت، المؤقت أدناه بيعيد المحاولة
       el.innerHTML="";
-      if(window.QRCode){
-        new QRCode(el,{text:data,width:id==="qrBack"?150:100,height:id==="qrBack"?150:100,colorDark:"#0a2a43",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
-      }
+      const size = id==="qrBack" ? 150 : 100;
+      const canvas = document.createElement("canvas");
+      el.appendChild(canvas);
+      window.QRCode.toCanvas(canvas, data, {
+        width: size,
+        margin: 1,
+        errorCorrectionLevel: "M",
+        color: { dark: "#0a2a43", light: "#ffffff" }
+      }, function(err){
+        if(err) console.error("QR generation failed:", err);
+      });
     });
   }
 
@@ -1088,7 +1097,7 @@
   // إذا تأخر تحميل مكتبة QR بسبب الاتصال، نحاول توليد الرموز تلقائياً بعد تحميل الصفحة.
   let qrRetryCount=0;
   const qrRetryTimer=setInterval(()=>{
-    if(window.QRCode){ updateQR(); clearInterval(qrRetryTimer); }
+    if(window.QRCode && typeof window.QRCode.toCanvas === "function"){ updateQR(); clearInterval(qrRetryTimer); }
     else if(++qrRetryCount>=20){ clearInterval(qrRetryTimer); }
   },500);
 })();
