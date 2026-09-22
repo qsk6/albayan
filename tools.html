@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="تصفّح أدوات منصة أدواتي واختر الأداة المناسبة مباشرة.">
+  <title>أدواتي | الأدوات</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-page="tools">
+  <header class="site-header">
+    <div class="container header-row">
+      <a class="logo" href="index.html" aria-label="الانتقال إلى الصفحة الرئيسية">
+        <span class="logo-icon" aria-hidden="true">⚙️</span>
+        <span>أدواتي</span>
+      </a>
+      <button class="nav-toggle" type="button" aria-label="فتح قائمة التنقل" aria-expanded="false" data-menu-toggle>
+        <span></span>
+      </button>
+      <nav class="main-nav" aria-label="التنقل الرئيسي" data-main-nav>
+        <ul class="nav-list">
+          <li><a class="nav-link" data-page="home" href="index.html">الرئيسية</a></li>
+          <li><a class="nav-link" data-page="tools" href="tools.html">الأدوات</a></li>
+          <li><a class="nav-link" data-page="about" href="about.html">حول المنصة</a></li>
+          <li><a class="nav-link" data-page="contact" href="contact.html">تواصل معنا</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="tools-hero tools-header">
+      <h1>كل الأدوات</h1>
+      <p>اختر الأداة التي تحتاجها وابدأ مباشرة.</p>
+    </section>
+
+    <section class="section">
+      <div class="filters" aria-label="تصفية الأدوات">
+        <button class="filter-btn" data-filter="all" type="button">الكل</button>
+        <button class="filter-btn" data-filter="students" type="button">طلاب</button>
+        <button class="filter-btn" data-filter="cards" type="button">بطاقات</button>
+        <button class="filter-btn" data-filter="qr" type="button">QR</button>
+        <button class="filter-btn" data-filter="images" type="button">صور</button>
+        <button class="filter-btn" data-filter="files" type="button">ملفات</button>
+        <button class="filter-btn" data-filter="calculators" type="button">حاسبات</button>
+      </div>
+
+      <div class="cards-grid three mt-1">
+        <article class="card tool-card" data-tool-category="cards">
+          <span class="status">متاحة</span>
+          <h3>مولّد الباج التعريفي</h3>
+          <p>أنشئ باجًا تعريفيًا من بياناتك وصورتك.</p>
+          <a class="card-link" data-tool-link="badge" href="#">فتح الأداة ←</a>
+        </article>
+
+        <article class="card tool-card" data-tool-category="qr">
+          <span class="status coming">قريبًا</span>
+          <h3>مولّد QR Code</h3>
+          <p>حوّل الروابط والنصوص إلى رمز QR بسهولة.</p>
+          <span class="card-disabled">قريبًا</span>
+        </article>
+
+        <article class="card tool-card" data-tool-category="images">
+          <span class="status coming">قريبًا</span>
+          <h3>ضغط الصور</h3>
+          <p>تقليل حجم الصور بسرعة مع الحفاظ على جودة مناسبة.</p>
+          <span class="card-disabled">قريبًا</span>
+        </article>
+
+        <article class="card tool-card" data-tool-category="files">
+          <span class="status coming">قريبًا</span>
+          <h3>أدوات PDF</h3>
+          <p>دمج الملفات وتقسيمها وتجهيزها للاستخدام اليومي.</p>
+          <span class="card-disabled">قريبًا</span>
+        </article>
+
+        <article class="card tool-card" data-tool-category="calculators">
+          <span class="status coming">قريبًا</span>
+          <h3>الحاسبات</h3>
+          <p>حاسبات سريعة للحسابات اليومية والدراسية.</p>
+          <span class="card-disabled">قريبًا</span>
+        </article>
+
+        <article class="card tool-card" data-tool-category="students">
+          <span class="status coming">قريبًا</span>
+          <h3>أدوات الطلاب</h3>
+          <p>أدوات عملية لتنظيم المهام والواجبات والمحتوى الدراسي.</p>
+          <span class="card-disabled">قريبًا</span>
+        </article>
+      </div>
+      <p class="no-results" data-no-results hidden>لا توجد أدوات مطابقة للتصنيف المحدد حاليًا.</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <section>
+        <h3 class="footer-title">أدواتي</h3>
+        <p>منصة أدوات رقمية بسيطة، سريعة ومفيدة.</p>
+      </section>
+      <section>
+        <h3 class="footer-title">روابط</h3>
+        <ul class="footer-links">
+          <li><a href="index.html">الرئيسية</a></li>
+          <li><a href="tools.html">الأدوات</a></li>
+          <li><a href="about.html">حول المنصة</a></li>
+          <li><a href="contact.html">تواصل معنا</a></li>
+        </ul>
+      </section>
+      <section>
+        <h3 class="footer-title">عن المنصة</h3>
+        <p>نجمع الأدوات المفيدة في مكان واحد لتسهيل المهام اليومية والدراسية.</p>
+      </section>
+    </div>
+    <p class="container footer-copy">© <span class="js-year">2026</span> أدواتي — جميع الحقوق محفوظة.</p>
+  </footer>
+
+  <script src="assets/js/main.js" defer></script>
+</body>
+</html>
