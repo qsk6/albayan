@@ -453,6 +453,8 @@
       position: relative;
       width: 54mm;
       height: 85.6mm;
+      min-width: 54mm;
+      min-height: 85.6mm;
       overflow: hidden;
       flex: 0 0 auto;
       border-radius: 3.5mm;
@@ -644,13 +646,16 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 13mm;
-      height: 13mm;
-      margin: 1mm auto 0;
-      padding: .5mm;
+      width: 16mm;
+      height: 16mm;
+      margin: 1.2mm auto 0;
+      padding: 1mm;
       overflow: hidden;
-      border-radius: 1mm;
+      border: .35mm solid #dbe4ea;
+      border-radius: 1.5mm;
       background: #fff;
+      box-sizing: border-box;
+      flex: 0 0 auto;
     }
 
     .qr-box canvas,
@@ -658,6 +663,9 @@
       display: block;
       width: 100% !important;
       height: 100% !important;
+      max-width: 100%;
+      max-height: 100%;
+      image-rendering: pixelated;
     }
 
     .back-card {
@@ -729,11 +737,12 @@
     }
 
     .qr-back {
-      width: 25mm;
-      height: 25mm;
+      width: 28mm;
+      height: 28mm;
       margin: 0;
-      flex: none;
-      border: 1px solid #d9e1e6;
+      flex: 0 0 28mm;
+      border: .35mm solid #d9e1e6;
+      padding: 1.2mm;
     }
 
     .back-footer {
@@ -1291,23 +1300,58 @@
         });
       }
 
+      let qrLoadPromise = null;
+
+      function loadQRCodeLibrary() {
+        if (window.QRCode && typeof window.QRCode.toCanvas === 'function') {
+          return Promise.resolve(true);
+        }
+
+        if (qrLoadPromise) return qrLoadPromise;
+
+        qrLoadPromise = new Promise(resolve => {
+          const existing = document.querySelector('script[data-qr-loader]');
+          if (existing) {
+            const finish = () => resolve(
+              Boolean(window.QRCode && typeof window.QRCode.toCanvas === 'function')
+            );
+            existing.addEventListener('load', finish, { once: true });
+            existing.addEventListener('error', finish, { once: true });
+            setTimeout(finish, 10000);
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = 'https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js';
+          script.async = true;
+          script.dataset.qrLoader = '1';
+
+          script.onload = () => resolve(
+            Boolean(window.QRCode && typeof window.QRCode.toCanvas === 'function')
+          );
+          script.onerror = () => resolve(false);
+
+          document.head.appendChild(script);
+          setTimeout(() => resolve(
+            Boolean(window.QRCode && typeof window.QRCode.toCanvas === 'function')
+          ), 10000);
+        });
+
+        return qrLoadPromise;
+      }
+
       async function renderQR(element, data, size) {
         element.innerHTML = '';
+        element.dataset.ready = 'false';
 
-        const ready = await waitUntil(() =>
-          window.QRCode &&
-          typeof window.QRCode.toCanvas === 'function'
-        );
+        const ready = await loadQRCodeLibrary();
 
         if (!ready) {
-          element.textContent = 'QR';
-          element.style.color = '#607481';
-          element.style.fontSize = '8px';
-          return;
+          element.innerHTML = '<span style="font-size:1.8mm;color:#b3261e;font-weight:700">تعذر تحميل QR</span>';
+          return false;
         }
 
         const canvas = document.createElement('canvas');
-        element.appendChild(canvas);
 
         try {
           await new Promise((resolve, reject) => {
@@ -1316,8 +1360,8 @@
               data,
               {
                 width: size,
-                margin: 1,
-                errorCorrectionLevel: 'M',
+                margin: 2,
+                errorCorrectionLevel: 'H',
                 color: {
                   dark: '#0a2a43',
                   light: '#ffffff'
@@ -1326,19 +1370,26 @@
               error => error ? reject(error) : resolve()
             );
           });
+
+          element.appendChild(canvas);
+          element.dataset.ready = 'true';
+          return true;
         } catch (error) {
           console.error('QR error:', error);
-          element.textContent = 'QR';
+          element.innerHTML = '<span style="font-size:1.8mm;color:#b3261e;font-weight:700">تعذر إنشاء QR</span>';
+          return false;
         }
       }
 
       async function updateQR() {
         const data = buildQRData();
 
-        await Promise.all([
-          renderQR(els.qrFront, data, 120),
-          renderQR(els.qrBack, data, 240)
+        const results = await Promise.all([
+          renderQR(els.qrFront, data, 220),
+          renderQR(els.qrBack, data, 420)
         ]);
+
+        return results.every(Boolean);
       }
 
       function updatePreviewText() {
@@ -1354,9 +1405,9 @@
         els.backYear.textContent = year;
       }
 
-      function updatePreview() {
+      async function updatePreview() {
         updatePreviewText();
-        updateQR();
+        return updateQR();
       }
 
       function validateName() {
@@ -1575,13 +1626,13 @@
         showStatus('success', 'تم تثبيت الصورة على الباج.');
       }
 
-      function generateBadge() {
+      async function generateBadge() {
         if (!validateAll()) {
           showStatus('error', 'يرجى تصحيح البيانات المطلوبة قبل التوليد.');
           return;
         }
 
-        updatePreview();
+        await updatePreview();
 
         state.generated = true;
         els.printBtn.disabled = false;
@@ -1647,7 +1698,7 @@
         button.textContent = '⏳ جاري التصدير...';
 
         try {
-          updatePreview();
+          await updatePreview();
 
           const [frontCanvas, backCanvas] = await Promise.all([
             captureBadge(els.badgeFront),
@@ -1844,8 +1895,8 @@
         els.tgInput,
         els.snapInput
       ].forEach(input => {
-        input.addEventListener('input', updatePreview);
-        input.addEventListener('change', updatePreview);
+        input.addEventListener('input', () => { updatePreview(); });
+        input.addEventListener('change', () => { updatePreview(); });
       });
 
       els.nameInput.addEventListener('blur', validateName);
